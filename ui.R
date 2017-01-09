@@ -15,6 +15,14 @@ library(shinythemes)
 ## Indicate which countries conform to strict deg prop in table at least
 ## Comment when upper limit in fix+prop does not kick in
 ## Comment when parabolic becomes linear
+## Fix + Prop^t
+## Square root
+## Bring back proportional with min 3
+## Spline
+## Descriptions with what special cases are included in the scenarios
+## Parties should not change colours
+## Small country labels should be hidden
+## Hemicycle should be a Hemicycle
 
 
 scenarios_list <- c(
@@ -25,7 +33,7 @@ scenarios_list <- c(
 )
 
 brexit_list <- c(
-  "Drop 73 MEPs",  "Equally distribute 73 MEPs (max 96)", 
+  "Drop 73 MEPs",  "Equally distribute 73 MEPs (max 96)",
   "Distribute 73 seats at current proportions (max 96)",
   "Distribute 73 seats to increase representativeness (max 96)",
   "Distribute 73 seats to increase representativeness (no maximum)",
@@ -50,7 +58,7 @@ treaty_list <- c(
 #                     # "Degressively proportional - Parabolic",
 #                     # "Degressively proportional - Spline",
 #                     "My scenario"
-# )  
+# )
 
 shinyUI(fluidPage(
   # includeCSS("http://www.w3schools.com/lib/w3.css"),
@@ -64,7 +72,7 @@ shinyUI(fluidPage(
           radioButtons("scen", "Scenarios", scenarios_list),
           conditionalPanel(condition = "input.scen == 'Treaty change'",
             tags$hr(),
-            selectInput("myscenario", "Select method", 
+            selectInput("myscenario", "Select method",
                         c("Fix + Prop", "Parabolic", "Limited loss") # "tbd - Square Root"
             ),
             checkboxInput("uk", "UK", value = FALSE),
@@ -86,19 +94,19 @@ shinyUI(fluidPage(
         ),
         mainPanel(
           tabsetPanel(
-            tabPanel("Representation", plotlyOutput("represent")) , # "The chart shows the allocation of seats in the 2014 - 2019 parliamentary cycle."), # , 
-            tabPanel("Shares", plotlyOutput("shares", width="100%")), 
-            tabPanel("Degressive Proportionality", plotlyOutput("degprop", width="100%")), # , 
+            tabPanel("Representation", plotlyOutput("represent")) , # "The chart shows the allocation of seats in the 2014 - 2019 parliamentary cycle."), # ,
+            tabPanel("Shares", plotlyOutput("shares", width="100%")),
+            tabPanel("Degressive Proportionality", plotlyOutput("degprop", width="100%")), # ,
             tabPanel("Table", DT::dataTableOutput("table")),
             tabPanel(
               "Seats",
-              radioButtons("seats", "",
-                           c("Political group",
-                             "Member State")
-              ),
+              # radioButtons("seats", "",
+              #              c("Political group",
+              #                "Member State")
+              # ),
               plotlyOutput("hemi", width="100%")
-              ),
-            tabPanel("Comparison", DT::dataTableOutput("comp"))
+              ) # ,
+            # tabPanel("Comparison", DT::dataTableOutput("comp"))
             # tabPanel("Summary", verbatimTextOutput("summary"))
           )
           # DT::dataTableOutput("comp")
