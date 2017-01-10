@@ -98,9 +98,11 @@ shinyServer(function(input, output, session) {
   meps <- read.csv("data/meps.csv")
   # meps_mat <- table(meps$country, meps$grp)
   meps_table <- count(meps, country, grp)
+  meps_table[(meps_table$country == "Spain") & (meps_table$grp == "EPP"), 'n'] <- 17
   meps_table <- spread(meps_table, grp, n, fill=0)
   meps_table[,-1] <- meps_table[,-1] / rowSums(meps_table[,-1])
   meps_group <- count(meps, grp, group)
+  meps_group[(meps_group$grp == "EPP"), 'n'] <- 217
   # m_short <- meps_group$grp
   # m_long <- meps_group$group
   m_labels <- data.frame(meps_group$grp, meps_group$group, colors)
