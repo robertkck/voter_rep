@@ -51,18 +51,6 @@ scenarios_list <- c("Status quo",
 
 scenarios_num <- c("", "1", "7", "5", "2", "9", "4", "3", "6" ) # Status quo wrong
 
-# colors <- c(
-#   '#FFFF00',
-#   '#0000FF',
-#   '#40E0D0',
-#   '#030E40',
-#   '#3399FF',
-#   '#009900',
-#   '#990000',
-#   '#D3D3D3',
-#   '#FF0000'
-# )
-
 colors <- c(
     "#d8d506",# ALDE
     "#104E8B",# ECR
@@ -449,21 +437,23 @@ shinyServer(function(input, output, session) {
     output$table <- DT::renderDataTable(
         if (input$scen=="Status quo") {
           datatable({
-            data[,c("country", "rep_scen", "rep_share_scen", "pop_rep_scen" )]
+            data[,c("country", "pop_share", "rep_scen", "rep_share_scen", "pop_rep_scen" )]
           },
           rownames = FALSE,
-          colnames = c("Member State", "Seats", "Seat %", "Population/Seat")
+          colnames = c("Member State", "Population %", "Seats", "Seat %", "Population/Seat")
           ) %>%
-          formatRound(c('pop_rep_scen'),0)
+          formatRound(c('pop_rep_scen'),0) %>%
+            formatPercentage(c('pop_share'),1)
         } else {
           datatable({
-            data[,c("country", "rep_scen", "diffs_rep_scen", "diffs_rep_share_scen", "diffs_pop_rep_scen" )]
+            data[,c("country", "pop_share", "rep_scen", "diffs_rep_scen", "rep_share_scen", "diffs_rep_share_scen", "pop_rep_scen" )]
           },
           rownames = FALSE,
-          colnames = c("Member State", "Seats", "Difference in seats", "Difference in seat share", "Difference in pop/rep")
+          colnames = c("Member State", "Population %", "Seats", "Difference", "Seats %", "Difference in seat share", "Population/Seat")
           ) %>%
           formatRound(c('diffs_rep_share_scen'),2) %>%
-          formatRound(c('diffs_pop_rep_scen'),0)
+          formatRound(c('pop_rep_scen'),0) %>%
+          formatPercentage(c('pop_share'),1)
         }
     )
   })
@@ -519,7 +509,7 @@ shinyServer(function(input, output, session) {
   })
   output$text_gini <- renderText({
     data <- filteredData()
-    paste("Malapportionment:", percent(round(data$mal_scen[1], digits = 4)), ", Gini:", round(data$gini_scen[1], digits = 3))
+    paste("Malapportionment:", percent(round(data$mal_scen[1], digits = 5)), ", Gini:", round(data$gini_scen[1], digits = 3))
   })
   output$text_specs <- renderText({
     data <- filteredData()
@@ -529,6 +519,20 @@ shinyServer(function(input, output, session) {
     t <- descScenario()
     t
   })
+
+  # Prepare download table
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("EP", input$m, input$M, input$H, sep="_")
+    },
+    content = function(file) {
+      data <- filteredData()
+      data[, 2:10] <- data[, 2:10] * data$rep_scen
+      write.csv(data, file)
+    },
+    contentType = "text/csv"
+  )
+
 
 
 

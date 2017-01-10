@@ -23,7 +23,8 @@ library(shinythemes)
 ## Parties should not change colours
 ## Small country labels should be hidden
 ## Hemicycle should be a Hemicycle
-
+## Also show political group below as in http://www.europarl.europa.eu/meps/en/hemicycle.html
+## Improve download output (Variable names, order, scenario name, file name, ...)
 
 scenarios_list <- c(
   "Status quo",
