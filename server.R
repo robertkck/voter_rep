@@ -13,6 +13,10 @@ library(DT)
 library(scales)
 library(SciencesPo)
 library(tidyverse)
+source('funk/voting_gini.R')
+source('funk/camcom.R')
+source('funk/parabolic.R')
+source('funk/limitloss.R')
 
 scenarios_list <- c(
   "Status quo",
@@ -62,17 +66,6 @@ colors <- c(
     '#D3D3D3',# NI
     "#FF3030" # S&D
   )
-
-# Gini function
-voting_gini <- function(pop_share, rep_share){
-    df <- data.frame(pop = pop_share, rep= rep_share)
-    df$pop_rep <- df$rep / df$pop
-    df <- df[with(df, order(pop_rep)),]
-    df$rep_share_cum <- cumsum(df$rep)
-    df$area <- (df$rep_share_cum - df$rep / 2) * df$pop
-    gini <- 1 - sum(df$area)/0.5
-    return(gini)
-  }
 
 shinyServer(function(input, output, session) {
 
@@ -163,31 +156,12 @@ shinyServer(function(input, output, session) {
       data$rep_scen <- data$rep
 
       if (input$myscenario == "Fix + Prop"){
-        base <- m-1
-        d = 2000000
-        inc = 500
-        data$rep_scen <- base + data$pop / d
-        i = 0
-        while (sum(data$rep_scen)<H) {
-          data$rep_scen = pmin(base + data$pop / d, M)
-          data$rep_scen = ceiling(data$rep_scen)
-          d <- d - inc
-          # i = i+1
-        }
-        # print(i)
-        # print(d)
+        out <- alloc.camcom(data$pop, m, M, H)
+        data$rep_scen <- out$rep
       } else if (input$myscenario == "Parabolic"){
-        c <- -0.01
-        data$exante <- data$pop * H / sum(data$pop)
-        m_par <- min(data$exante)
-        M_par <- max(data$exante)
-        data$rep_scen <- 100
-        while (sum(data$rep_scen)>H) {
-          a <- m* (M_par / (M_par-m_par)) - M * m_par / (M_par - m_par) + c *(M_par* (M_par*m_par - m_par^2))/(M_par - m_par)
-          b <- (M-m)/(M_par - m_par) - c * (M_par^2 - m_par^2)/(M_par - m_par)
-          data$rep_scen = round(a + b * data$exante + c * data$exante^2)
-          c <- c + 0.00001
-        }
+        out <- alloc.parabolic(data$pop, m, M, H)
+        data$rep_scen <- out$rep
+        c <- out$c
         # print(c)
         # print(sum(data$rep_scen))
         # print(M_par >= -c/(2*b))
@@ -197,39 +171,9 @@ shinyServer(function(input, output, session) {
           need(c <= 0, "Parabolic method not applicable for these specifications.")
         )
       } else if (input$myscenario == "Limited loss"){
-        base <- m-1
-        d = 2000000
-        inc = 500
-        data$rep_scen <- base + data$pop / d
-        # i = 0
-        while (sum(data$rep_scen)<H) {
-          data$rep_scen_exact = pmin(base + data$pop / d, M)
-          data$rep_scen = ceiling(data$rep_scen_exact)
-          d <- d - inc
-          # i = i+1
-        }
-        data$diffs_rep_scen <- data$rep_scen - data$rep
-        remainder <- abs(sum(data$diffs_rep_scen[data$diffs_rep_scen < -1] +1 ))
-        possible <- sum(data$diffs_rep_scen[data$diffs_rep_scen > -1] + 1 )
-        validate(
-          need(remainder <= possible, "Limiting loss not feasible. Not enough seats to distribute.")
-        )
-        data$rep_scen[data$diffs_rep_scen < -1] <-  data$rep[data$diffs_rep_scen < -1] - 1
-        if (remainder > 0) {
-          for (i in 1:remainder) {
-            indicator <- data$rep_scen - data$rep_scen_exact
-            print(indicator)
-            indicator[data$rep_scen - data$rep < 0] <- -100
-            data$rep_scen[which.max(indicator)] <- data$rep_scen[which.max(indicator)] - 1
-            # data$rep_scen[which.max(data$rep_scen[data$diffs_rep_scen > 0] - data$rep_scen_exact[data$diffs_rep_scen > 0])] <- data$rep_scen[which.max(data$rep_scen - data$rep_scen_exact)] - 1
-            # print(i)
-            # print(sum(data$rep_scen))
-            # print(which.max(indicator))
-          }
-        }
-
-        # print(i)
-        # print(d)
+        allocation <- alloc.camcom(data$pop, m, M, H)
+        out <- limitloss(data$rep, allocation$rep, allocation$rep_exact)
+        data$rep_scen <- out$rep_scen
       }
 
       data$rep_share_scen <- (data$rep_scen) / sum(data$rep_scen)
@@ -368,24 +312,6 @@ shinyServer(function(input, output, session) {
 
   })
 
-  # output$degprop <- renderPlotly({
-  #   data <- filteredData()
-  #   scenario <- filteredScenario()
-  #   p <- ggplot(data, aes(log(pop), pop_rep_scen)) +
-  #     geom_line() +
-  #     geom_point(
-  #       aes(text =paste(
-  #         "Country:", country,  "<br>",
-  #         "Reps: ",  rep_scen, "<br>",
-  #         "Pop: ",  pop))
-  #       ) +
-  #     ylim(0,950000) +
-  #     xlim(12.9,18.3) +
-  #     xlab("Population 2015 (log)") + ylab("Population per seat") + theme(aspect.ratio=1)
-  #   ggplotly(p, tooltip = "text")
-  #
-  #  })
-
   # Hemicycle chart
   observe({
     scenario <- filteredScenario()
@@ -477,12 +403,12 @@ shinyServer(function(input, output, session) {
   #     }, options = list(paging = FALSE, searching = FALSE), selection = list(mode='single', selected = 1, target = 'row')))
   # })
 
-  proxy = dataTableProxy('comp')
-  observe({
-    scenario <- filteredScenario()
-    r <- which(scenarios_num == scenario)
-    proxy %>% selectRows(r)
-  })
+  # proxy = dataTableProxy('comp')
+  # observe({
+  #   scenario <- filteredScenario()
+  #   r <- which(scenarios_num == scenario)
+  #   proxy %>% selectRows(r)
+  # })
 
 
 
