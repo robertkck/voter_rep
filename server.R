@@ -17,6 +17,7 @@ source('funk/voting_gini.R')
 source('funk/camcom.R')
 source('funk/parabolic.R')
 source('funk/limitloss.R')
+source('funk/malapportionment.R')
 
 scenarios_list <- c(
   "Status quo",
@@ -181,7 +182,8 @@ shinyServer(function(input, output, session) {
       data$diffs_rep_scen <- data$rep_scen - data$rep
       data$diffs_pop_rep_scen <-data$pop_rep_scen -  data$pop_rep
       data$diffs_rep_share_scen <- data$rep_share_scen - data$rep_share
-      data$mal_scen <- 0.5 * sum(abs(data$rep_share_scen - data$pop_share))
+      # data$mal_scen <- 0.5 * sum(abs(data$rep_share_scen - data$pop_share))
+      data$mal_scen <- mal(data$pop_share, data$rep_share_scen)
       data$gini_scen <- voting_gini(data$pop_share, data$rep_share_scen)
       data
   })
