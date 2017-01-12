@@ -20,11 +20,13 @@ library(shinythemes)
 ## Bring back proportional with min 3
 ## Spline
 ## Descriptions with what special cases are included in the scenarios
-## Parties should not change colours
-## Small country labels should be hidden
 ## Hemicycle should be a Hemicycle
 ## Also show political group below as in http://www.europarl.europa.eu/meps/en/hemicycle.html
 ## Improve download output (Variable names, order, scenario name, file name, ...)
+## Compare button: Click to keep current distribution and continue exploring (also clear)
+## Map
+
+# runApp(display.mode="showcase")
 
 scenarios_list <- c(
   "Status quo",
@@ -95,21 +97,24 @@ shinyUI(fluidPage(
         ),
         mainPanel(
           tabsetPanel(
-            tabPanel("Representation", plotlyOutput("represent")) , # "The chart shows the allocation of seats in the 2014 - 2019 parliamentary cycle."), # ,
-            tabPanel("Shares", plotlyOutput("shares", width="100%")),
-            tabPanel("Degressive Proportionality", plotlyOutput("degprop", width="100%")), # ,
-            tabPanel("Table", DT::dataTableOutput("table")),
+            tabPanel("Representation", plotlyOutput("represent"), icon = icon("institution")) , # "The chart shows the allocation of seats in the 2014 - 2019 parliamentary cycle."), # ,
+            tabPanel("Shares", plotlyOutput("shares", width="100%"), icon = icon("bar-chart")),
+            tabPanel("Degressive Prop.", plotlyOutput("degprop", width="100%"), icon = icon("line-chart")), # ,
+            tabPanel("Table", DT::dataTableOutput("table"), icon = icon("table")),
             tabPanel(
               "Seats",
               # radioButtons("seats", "",
               #              c("Political group",
               #                "Member State")
               # ),
-              plotlyOutput("hemi", width="100%")
+              plotlyOutput("hemi", width="100%"),
+              icon = icon("pie-chart")
               ) # ,
             # tabPanel("Comparison", DT::dataTableOutput("comp"))
             # tabPanel("Summary", verbatimTextOutput("summary"))
-          )
+          ),
+          actionButton("compare", "Compare", icon = icon("thumb-tack")),
+          actionButton("clear", "Clear", icon = icon("undo"))
           # DT::dataTableOutput("comp")
         )
       )

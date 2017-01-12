@@ -88,6 +88,7 @@ shinyServer(function(input, output, session) {
   # m_short <- meps_group$grp
   # m_long <- meps_group$group
   m_labels <- data.frame(meps_group$grp, meps_group$group, colors)
+  rep_scen_comp <- NULL
 
   # Merge data sets
   eu <- merge(meps_table, eu, by.x="country", by.y = "GEO")
@@ -188,6 +189,35 @@ shinyServer(function(input, output, session) {
       data
   })
 
+  # Comparison button
+  rep_scen_comp <- reactiveValues()
+
+  comparison_button <- observeEvent(input$compare, {
+    data <- filteredData()
+    # print(exists("rep_scen_comp"))
+    # if (exists("rep_scen_comp")) {
+    #   rep_scen_comp <- c(rep_scen_comp, data$rep_scen)
+    # } else {
+    #   data$rep_scen_comp <- data$rep_scen
+    # }
+    # print(data$rep_scen_comp)
+    # rep_scen_comp <- data.frame(comp1 = data$rep_scen)
+    # print(length(rep_scen_comp))
+    rep_scen_comp$country <- data$country
+    rep_scen_comp$comp1 <- data$rep_scen
+    rep_scen_comp$comp1_share <- data$rep_share_scen
+    rep_scen_comp$pop_rep_comp <- data$pop_rep_scen
+    # rep_scen_comp$pop <- data$pop
+    # print(rep_scen_comp$comp1)
+    # rep_scen_comp <- data.frame(country = data$country, comp1 = data$rep_scen, comp1_share = data$rep_share_scen)
+  })
+
+  clear_button <- observeEvent(input$clear, {
+    rep_scen_comp$comp1 <- NULL
+  })
+
+
+
   #############################################################################################
   ### Plots
 
@@ -225,13 +255,28 @@ shinyServer(function(input, output, session) {
           range = c(0, 83000000)
         )
       )
-    if (input$scen != "Status quo"){
+    # if (input$scen != "Status quo"){
+    #   p <- add_markers(
+    #     p,
+    #     y = ~rep, name = "Current",
+    #     text = ~paste0(country, "<br>Seats: ", rep, "<br>Population: ", pop),
+    #     opacity = 0.6,
+    #     visible = "legendonly"
+    #   )
+    # }
+
+    # print(!is.null(rep_scen_comp$comp1))
+    if (!is.null(rep_scen_comp$comp1)){
+      comparison_data <- data.frame(country = rep_scen_comp$country, comp1 = rep_scen_comp$comp1, comp1_share = rep_scen_comp$comp1_share)
+      data <- left_join(data, comparison_data, by = "country")
+      # print(data$comp1)
       p <- add_markers(
         p,
-        y = ~rep, name = "Current",
-        text = ~paste0(country, "<br>Seats: ", rep, "<br>Population: ", pop),
-        opacity = 0.6,
-        visible = "legendonly"
+        y = data$comp1, name = "Comparison",
+        text = ~paste0(country, "<br>Seats: ", data$comp1, "<br>Population: ", pop),
+        opacity = 0.8,
+        marker = list(color = "#89B440")
+        # visible = "legendonly"
       )
     }
     p
@@ -239,7 +284,6 @@ shinyServer(function(input, output, session) {
 
 
   # Plot Shares
-
   output$shares <- renderPlotly({
     scenario <- filteredScenario()
     data <- filteredData()
@@ -266,6 +310,20 @@ shinyServer(function(input, output, session) {
             ),
           xaxis = list(title = '')  # Fix this
       )
+
+    if (!is.null(rep_scen_comp$comp1)){
+      comparison_data <- data.frame(country = rep_scen_comp$country, comp1 = rep_scen_comp$comp1, comp1_share = rep_scen_comp$comp1_share)
+      data <- left_join(data, comparison_data, by = "country")
+      p <- add_lines(
+        p,
+        y = data$comp1_share, name = "Comparison",
+        text = ~paste0("Seats: ", percent(data$comp1_share)),
+        opacity = 0.8,
+        line = list(color = "#89B440")
+        # visible = "legendonly"
+      )
+    }
+    p
   })
 
   # Plot Degressive Proportionality
@@ -299,15 +357,29 @@ shinyServer(function(input, output, session) {
         )
       )
 
-    if (input$scen != "Status quo"){
+    # if (input$scen != "Status quo"){
+    #   p <- add_trace(
+    #     p,
+    #     y = ~pop_rep, name = "Current",
+    #     text = ~paste0(country, "<br>Pop./MEP: ", round(pop_rep), "<br>Seats: ", rep),
+    #     mode = 'lines+markers',
+    #     opacity = 0.6,
+    #     visible = "legendonly",
+    #     type = 'scatter'
+    #   )
+    # }
+    if (!is.null(rep_scen_comp$comp1)){
+      comparison_data <- data.frame(country = rep_scen_comp$country, comp1 = rep_scen_comp$comp1, comp1_share = rep_scen_comp$comp1_share, pop_rep_comp = rep_scen_comp$pop_rep_comp)
+      data <- left_join(data, comparison_data, by = "country")
       p <- add_trace(
         p,
-        y = ~pop_rep, name = "Current",
-        text = ~paste0(country, "<br>Pop./MEP: ", round(pop_rep), "<br>Seats: ", rep),
+        y = data$pop_rep_comp, name = "Comparison",
+        type = 'scatter',
         mode = 'lines+markers',
-        opacity = 0.6,
-        visible = "legendonly",
-        type = 'scatter'
+        opacity = 0.8,
+        text = ~paste0(country, "<br>Pop./MEP: ", round(data$pop_rep_comp), "<br>Seats: ", data$comp1),
+        marker = list(color = "#89B440"),
+        line = list(color = "#89B440")
       )
     }
     p
