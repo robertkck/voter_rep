@@ -21,8 +21,8 @@ source('funk/malapportionment.R')
 
 scenarios_list <- c(
   "Status quo",
-  "Brexit scenarios",
-  "Allocations within the Treaty",
+  "Simple Brexit scenarios",
+  "Minimising inequality within the Treaty",
   "Treaty change"
 )
 
@@ -31,29 +31,18 @@ brexit_list <- c(
   "Equally distribute 73 MEPs (max 96)",
   "Distribute 73 seats at current proportions (max 96)",
   "Distribute 73 seats to increase representativeness (max 96)",
-  "Distribute 73 seats to increase representativeness (no maximum)",
+  # "Distribute 73 seats to increase representativeness (no maximum)",
   "Allocate seats to transnational list"
 )
 
 treaty_list <- c(
-  "Cambridge Compromise (total 751)",
-  "Cambridge Compromise (total 736) - minimise malapportionment",
-  "Cambridge Compromise (total 639) - minimise Gini"
+  # "Cambridge Compromise (total 751)",
+  "Cambridge Compromise (total 639) - minimise Gini",
+  "Cambridge Compromise (total 736) - minimise malapportionment"
 )
 
-brexit_num <- c("1", "7", "5", "2", "9", "4")
-treaty_num <- c( "3", "6", "_gini")
-
-scenarios_list <- c("Status quo",
-                    "Drop 73 MEPs",
-                    "Equally distribute 73 MEPs (max 96)",
-                    "Distribute 73 seats at current proportions (max 96)",
-                    "Distribute 73 seats to increase representativeness (max 96)",
-                    "Distribute 73 seats to increase representativeness (no maximum)",
-                    "Allocate seats to transnational list",
-                    "Fix + prop (total 751)",
-                    "Fix + prop (total 736) - maximize equality"
-)
+brexit_num <- c("1", "7", "5", "2",  "4") # "9"
+treaty_num <- c( "_gini", "6") #  "3"
 
 scenarios_num <- c("", "1", "7", "5", "2", "9", "4", "3", "6" ) # Status quo wrong
 
@@ -111,9 +100,9 @@ shinyServer(function(input, output, session) {
 
   # Filter data
   filteredScenario <- reactive({
-    if (input$scen=="Brexit scenarios"){
+    if (input$scen=="Simple Brexit scenarios"){
       brexit_num[brexit_list == input$brexit]
-    } else if (input$scen=="Allocations within the Treaty") {
+    } else if (input$scen=="Minimising inequality within the Treaty") {
       treaty_num[treaty_list == input$treaty]
     }
   })
@@ -178,7 +167,7 @@ shinyServer(function(input, output, session) {
 
       data$rep_scen <- data$rep
 
-      if (input$myscenario == "Fix + Prop"){
+      if (input$myscenario == "Cambridge Compromise (Base + Prop)"){
         out <- alloc.camcom(data$pop, m, M, H)
         data$rep_scen <- out$rep
       } else if (input$myscenario == "Parabolic"){
@@ -235,15 +224,15 @@ shinyServer(function(input, output, session) {
     data <- filteredData()
     scenario <- filteredScenario()
 
-    data$rep_prop <- 3 + data$pop * (sum(data$rep_scen - 3))/ sum(data$pop)
+    # data$rep_prop <- 3 + data$pop * (sum(data$rep_scen - 3))/ sum(data$pop)
 
     p <- plot_ly(data, x = ~pop, hoverinfo = 'text') %>%
-      add_lines(
-        y = ~rep_prop, name = paste0("Proportional <br> (min 3, total ", round(sum(data$rep_scen)),")" ),
-        visible = "legendonly"
-      ) %>%
+      # add_lines(
+      #   y = ~rep_prop, name = paste0("Proportional <br> (min 3, total ", round(sum(data$rep_scen)),")" ),
+      #   visible = "legendonly"
+      # ) %>%
       add_markers(
-        y = ~rep_scen, name = "Scenario",
+        y = ~rep_scen, name = "Selected scenario",
         text = ~paste0(country, "<br>Seats: ", rep_scen, "<br>Population: ", pop),
         marker = list(
           size = 8,
@@ -253,6 +242,7 @@ shinyServer(function(input, output, session) {
       # add_bars( y = ~pop_share, name = "Share in population") %>%
       layout(
         # legend = list(orientation = 'h'),
+        legend = list(showlegend = FALSE),
         paper_bgcolor='transparent',
         plot_bgcolor='transparent',
         yaxis = list(
@@ -281,7 +271,7 @@ shinyServer(function(input, output, session) {
       # print(data$comp1)
       p <- add_markers(
         p,
-        y = data$comp1, name = "Comparison",
+        y = data$comp1, name = "Comparison scenario",
         text = ~paste0(country, "<br>Seats: ", data$comp1, "<br>Population: ", pop),
         opacity = 0.8,
         marker = list(color = "#89B440")
@@ -310,7 +300,7 @@ shinyServer(function(input, output, session) {
         text = ~paste0("Seats: ", percent(rep_share_scen))
       ) %>%
       layout(
-          # legend = list(orientation = 'h'),
+          legend = list(orientation = 'h'),
           paper_bgcolor='transparent',
           plot_bgcolor='transparent',
           yaxis = list(
@@ -340,25 +330,26 @@ shinyServer(function(input, output, session) {
     data <- filteredData()
     scenario <- filteredScenario()
 
-    data$rep_prop <- 3 + data$pop * (sum(data$rep_scen - 3))/ sum(data$pop)
-    data$pop_rep_prop <- data$pop / data$rep_prop
+    # data$rep_prop <- 3 + data$pop * (sum(data$rep_scen - 3))/ sum(data$pop)
+    # data$pop_rep_prop <- data$pop / data$rep_prop
 
     p <- plot_ly(data, x = ~log(pop), hoverinfo = 'text') %>%
       add_trace(
-        y = ~pop_rep_scen, name = "Scenario",
+        y = ~pop_rep_scen, name = "Selected scenario",
         type = 'scatter',
         mode = 'lines+markers',
         text = ~paste0(country, "<br>Pop./MEP: ", round(pop_rep_scen), "<br>Seats: ", rep_scen),
         marker = list(color = "#a21636"),
         line = list(color = "#a21636")
       ) %>%
-      add_lines(
-        y = ~pop_rep_prop, name = "Proportional <br> (min 3)",
-        text = ~country,
-        visible = "legendonly"
-      ) %>%
+      # add_lines(
+      #   y = ~pop_rep_prop, name = "Proportional <br> (min 3)",
+      #   text = ~country,
+      #   visible = "legendonly"
+      # ) %>%
       layout(
         # legend = list(orientation = 'h'),
+        legend = list(showlegend = FALSE),
         paper_bgcolor='transparent',
         plot_bgcolor='transparent',
         yaxis = list(
@@ -383,7 +374,7 @@ shinyServer(function(input, output, session) {
       data <- left_join(data, comparison_data, by = "country")
       p <- add_trace(
         p,
-        y = data$pop_rep_comp, name = "Comparison",
+        y = data$pop_rep_comp, name = "Comparison scenario",
         type = 'scatter',
         mode = 'lines+markers',
         opacity = 0.8,
@@ -456,12 +447,12 @@ shinyServer(function(input, output, session) {
             formatPercentage(c('pop_share'),1)
         } else {
           datatable({
-            data[,c("country", "pop_share", "rep_scen", "diffs_rep_scen", "rep_share_scen", "diffs_rep_share_scen", "pop_rep_scen" )]
+            data[,c("country", "pop_share", "rep_scen", "diffs_rep_scen", "rep_share_scen", "pop_rep_scen" )] #  "diffs_rep_share_scen",
           },
           rownames = FALSE,
-          colnames = c("Member State", "Population %", "Seats", "Difference", "Seats %", "Difference in seat share", "Population/Seat")
+          colnames = c("Member State", "Population %", "Seats", "Difference", "Seats %", "Population/Seat") # "Difference in seat share",
           ) %>%
-          formatRound(c('diffs_rep_share_scen'),2) %>%
+          # formatRound(c('diffs_rep_share_scen'),2) %>%
           formatRound(c('pop_rep_scen'),0) %>%
           formatPercentage(c('pop_share'),1)
         }
@@ -506,7 +497,7 @@ shinyServer(function(input, output, session) {
   })
   output$text_method <- renderText({
     t <- "Method: "
-    if (input$scen=="Brexit scenarios"){
+    if (input$scen=="Simple Brexit scenarios"){
       t <- paste0(t, input$brexit)
     } else if (input$scen=="Allocations within the Treaty") {
       t <- paste0(t, input$treaty)
@@ -519,7 +510,7 @@ shinyServer(function(input, output, session) {
   })
   output$text_gini <- renderText({
     data <- filteredData()
-    paste("Malapportionment:", percent(round(data$mal_scen[1], digits = 5)), ", Gini:", round(data$gini_scen[1], digits = 3))
+    paste("Malapportionment:", percent(round(data$mal_scen[1], digits = 5)), ", Gini:", percent(round(data$gini_scen[1], digits = 3)))
   })
   output$text_specs <- renderText({
     data <- filteredData()
@@ -561,14 +552,20 @@ shinyServer(function(input, output, session) {
     t <- ""
     if (input$scen=="Status quo"){
       t <- paste0(t, "Allocation of seats in the EP, 2014 - 2019. The distribution of seats is part of secondary law and determined in European Council's decision from 28 June 2013 (2013/312/EU)")
-    } else if (input$scen == "Brexit scenarios") {
+    } else if (input$scen == "Simple Brexit scenarios") {
 
         if (input$brexit == "Drop 73 MEPs") {
           t <- paste0(t, "The size of the Parliament shrinks by the number of British MEPs.")
         }
     } else if (input$scen == "Allocations within the Treaty"){
-      if (input$treaty=="Fix + prop (total 751)") {
+      if (input$treaty=="Cambridge Compromise (total 751)") {
         t <- paste0(t, "Following the recommendations of the Cambridge Compromise, this method allocates seats based on a fixed and a proportional part. First, every Member State receives 5 seats. Second, the remaining seats are linearly distributed according to population sizes with upwards rounding.")
+      }
+      if (input$treaty=="Cambridge Compromise (total 736) - minimise malapportionment") {
+        t <- paste0(t, "Following the recommendations of the Cambridge Compromise, this method allocates seats based on a fixed and a proportional part. First, every Member State receives 5 seats. Second, the remaining seats are linearly distributed according to population sizes with upwards rounding. A total parliament size of 736 minimises malapportionment")
+      }
+      if (input$treaty=="Cambridge Compromise (total 639) - minimise Gini") {
+        t <- paste0(t, "Following the recommendations of the Cambridge Compromise, this method allocates seats based on a fixed and a proportional part. First, every Member State receives 5 seats. Second, the remaining seats are linearly distributed according to population sizes with upwards rounding. A total parliament size of 639 minimises the Gini coefficient")
       }
     } else {
       t <- ""

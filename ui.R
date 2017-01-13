@@ -31,8 +31,8 @@ library(shinythemes)
 
 scenarios_list <- c(
   "Status quo",
-  "Brexit scenarios",
-  "Allocations within the Treaty",
+  "Simple Brexit scenarios",
+  "Minimising inequality within the Treaty", # "Allocations within the Treaty",
   "Treaty change"
 )
 
@@ -40,14 +40,14 @@ brexit_list <- c(
   "Drop 73 MEPs",  "Equally distribute 73 MEPs (max 96)",
   "Distribute 73 seats at current proportions (max 96)",
   "Distribute 73 seats to increase representativeness (max 96)",
-  "Distribute 73 seats to increase representativeness (no maximum)",
+  # "Distribute 73 seats to increase representativeness (no maximum)",
   "Allocate seats to transnational list"
 )
 
 treaty_list <- c(
-  "Cambridge Compromise (total 751)",
-  "Cambridge Compromise (total 736) - minimise malapportionment",
-  "Cambridge Compromise (total 639) - minimise Gini"
+  # "Cambridge Compromise (total 751)",
+  "Cambridge Compromise (total 639) - minimise Gini",
+  "Cambridge Compromise (total 736) - minimise malapportionment"
 )
 
 # scenarios_list <- c("Status quo",
@@ -78,20 +78,20 @@ shinyUI(fluidPage(
           conditionalPanel(condition = "input.scen == 'Treaty change'",
             tags$hr(),
             selectInput("myscenario", "Select method",
-                        c("Fix + Prop", "Parabolic", "Limited loss") # "tbd - Square Root"
+                        c("Cambridge Compromise (Base + Prop)", "Parabolic", "Limited loss") # "tbd - Square Root"
             ),
-            checkboxInput("uk", "UK", value = FALSE),
+            checkboxInput("uk", "UK remains a Member", value = FALSE),
             sliderInput("m", "Minimum number per State", 1, 10, 6),
             sliderInput("M", "Maximum number per State", 75, 140, 96),
             sliderInput("H", "Total number of Seats", 600, 800, 751)# ,
             # downloadButton('downloadData', 'Download')
           ),
-          conditionalPanel(condition = "input.scen == 'Brexit scenarios'",
+          conditionalPanel(condition = "input.scen == 'Simple Brexit scenarios'",
             tags$hr(),
             selectInput("brexit", "Select method", brexit_list
             )
           ),
-          conditionalPanel(condition = "input.scen == 'Allocations within the Treaty'",
+          conditionalPanel(condition = "input.scen == 'Minimising inequality within the Treaty'",
             tags$hr(),
             selectInput("treaty", "Select method", treaty_list
             )
