@@ -36,12 +36,13 @@ brexit_list <- c(
 )
 
 treaty_list <- c(
-  "Fix + prop (total 751)",
-  "Fix + prop (total 736) - maximize equality"
+  "Cambridge Compromise (total 751)",
+  "Cambridge Compromise (total 736) - minimise malapportionment",
+  "Cambridge Compromise (total 639) - minimise Gini"
 )
 
 brexit_num <- c("1", "7", "5", "2", "9", "4")
-treaty_num <- c( "3", "6")
+treaty_num <- c( "3", "6", "_gini")
 
 scenarios_list <- c("Status quo",
                     "Drop 73 MEPs",
@@ -126,6 +127,26 @@ shinyServer(function(input, output, session) {
       data$rep_scen <- data$rep
     } else if (input$scen == "Treaty change") {
       data <- myScenData()
+    } else if (scenario == "_gini") {
+      if (input$uk == TRUE) {data <- eu} else {data <- eu_brexit}
+      data <- select(
+        data, country, ALDE, ECR, EFDD, ENF, EPP,
+        contains("Greens"), contains("GUE/NGL"), NI, contains("S&D"),
+        ctry, pop, rep,  pop_share, pop_rep, rep_share
+      )
+      m <- 6
+      M <- 96
+      H <- 639
+      out <- alloc.camcom(data$pop, m, M, H)
+      data$rep_scen <- out$rep
+      data$rep_share_scen <- (data$rep_scen) / sum(data$rep_scen)
+      data$pop_rep_scen <- data$pop / data$rep_scen
+      data$diffs_rep_scen <- data$rep_scen - data$rep
+      data$diffs_pop_rep_scen <-data$pop_rep_scen -  data$pop_rep
+      data$diffs_rep_share_scen <- data$rep_share_scen - data$rep_share
+      # data$mal_scen <- 0.5 * sum(abs(data$rep_share_scen - data$pop_share))
+      data$mal_scen <- mal(data$pop_share, data$rep_share_scen)
+      data$gini_scen <- voting_gini(data$pop_share, data$rep_share_scen)
     } else {
     data <- select(
       eu_brexit, country, ALDE, ECR, EFDD, ENF, EPP,
@@ -194,22 +215,10 @@ shinyServer(function(input, output, session) {
 
   comparison_button <- observeEvent(input$compare, {
     data <- filteredData()
-    # print(exists("rep_scen_comp"))
-    # if (exists("rep_scen_comp")) {
-    #   rep_scen_comp <- c(rep_scen_comp, data$rep_scen)
-    # } else {
-    #   data$rep_scen_comp <- data$rep_scen
-    # }
-    # print(data$rep_scen_comp)
-    # rep_scen_comp <- data.frame(comp1 = data$rep_scen)
-    # print(length(rep_scen_comp))
     rep_scen_comp$country <- data$country
     rep_scen_comp$comp1 <- data$rep_scen
     rep_scen_comp$comp1_share <- data$rep_share_scen
     rep_scen_comp$pop_rep_comp <- data$pop_rep_scen
-    # rep_scen_comp$pop <- data$pop
-    # print(rep_scen_comp$comp1)
-    # rep_scen_comp <- data.frame(country = data$country, comp1 = data$rep_scen, comp1_share = data$rep_share_scen)
   })
 
   clear_button <- observeEvent(input$clear, {
@@ -243,7 +252,7 @@ shinyServer(function(input, output, session) {
       ) %>%
       # add_bars( y = ~pop_share, name = "Share in population") %>%
       layout(
-        #legend = list(orientation = 'h'),
+        # legend = list(orientation = 'h'),
         paper_bgcolor='transparent',
         plot_bgcolor='transparent',
         yaxis = list(
@@ -301,7 +310,7 @@ shinyServer(function(input, output, session) {
         text = ~paste0("Seats: ", percent(rep_share_scen))
       ) %>%
       layout(
-          legend = list(orientation = 'h'),
+          # legend = list(orientation = 'h'),
           paper_bgcolor='transparent',
           plot_bgcolor='transparent',
           yaxis = list(
@@ -349,6 +358,7 @@ shinyServer(function(input, output, session) {
         visible = "legendonly"
       ) %>%
       layout(
+        # legend = list(orientation = 'h'),
         paper_bgcolor='transparent',
         plot_bgcolor='transparent',
         yaxis = list(

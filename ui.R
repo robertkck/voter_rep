@@ -25,6 +25,7 @@ library(shinythemes)
 ## Improve download output (Variable names, order, scenario name, file name, ...)
 ## Compare button: Click to keep current distribution and continue exploring (also clear)
 ## Map
+## Fix aspect ratio
 
 # runApp(display.mode="showcase")
 
@@ -44,8 +45,9 @@ brexit_list <- c(
 )
 
 treaty_list <- c(
-  "Fix + prop (total 751)",
-  "Fix + prop (total 736) - maximize equality"
+  "Cambridge Compromise (total 751)",
+  "Cambridge Compromise (total 736) - minimise malapportionment",
+  "Cambridge Compromise (total 639) - minimise Gini"
 )
 
 # scenarios_list <- c("Status quo",
@@ -93,13 +95,16 @@ shinyUI(fluidPage(
             tags$hr(),
             selectInput("treaty", "Select method", treaty_list
             )
-          )
+          ),
+          tags$hr(),
+          actionButton("compare", "Compare", icon = icon("thumb-tack")),
+          actionButton("clear", "Clear", icon = icon("undo"))
         ),
         mainPanel(
           tabsetPanel(
             tabPanel("Representation", plotlyOutput("represent"), icon = icon("institution")) , # "The chart shows the allocation of seats in the 2014 - 2019 parliamentary cycle."), # ,
             tabPanel("Shares", plotlyOutput("shares", width="100%"), icon = icon("bar-chart")),
-            tabPanel("Degressive Prop.", plotlyOutput("degprop", width="100%"), icon = icon("line-chart")), # ,
+            tabPanel("Degressive Proportionality", plotlyOutput("degprop", width="100%"), icon = icon("line-chart")), # ,
             tabPanel("Table", DT::dataTableOutput("table"), icon = icon("table")),
             tabPanel(
               "Seats",
@@ -112,9 +117,7 @@ shinyUI(fluidPage(
               ) # ,
             # tabPanel("Comparison", DT::dataTableOutput("comp"))
             # tabPanel("Summary", verbatimTextOutput("summary"))
-          ),
-          actionButton("compare", "Compare", icon = icon("thumb-tack")),
-          actionButton("clear", "Clear", icon = icon("undo"))
+          )
           # DT::dataTableOutput("comp")
         )
       )
