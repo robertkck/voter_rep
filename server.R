@@ -28,11 +28,11 @@ scenarios_list <- c(
 
 brexit_list <- c(
   "Drop 73 MEPs",
-  "Equally distribute 73 MEPs (max 96)",
-  "Distribute 73 seats at current proportions (max 96)",
-  "Distribute 73 seats to increase representativeness (max 96)",
+  "Equally distribute 73 MEPs",
+  "Distribute 73 seats at current proportions",
+  "Distribute 73 seats to increase representativeness"
   # "Distribute 73 seats to increase representativeness (no maximum)",
-  "Allocate seats to transnational list"
+  # "Allocate seats to transnational list"
 )
 
 treaty_list <- c(
@@ -41,7 +41,7 @@ treaty_list <- c(
   "Cambridge Compromise (total 736) - minimise malapportionment"
 )
 
-brexit_num <- c("1", "7", "5", "2",  "4") # "9"
+brexit_num <- c("1", "7", "5", "2") #  "4" "9"
 treaty_num <- c( "_gini", "6") #  "3"
 
 scenarios_num <- c("", "1", "7", "5", "2", "9", "4", "3", "6" ) # Status quo wrong
@@ -135,7 +135,7 @@ shinyServer(function(input, output, session) {
       data$diffs_rep_share_scen <- data$rep_share_scen - data$rep_share
       # data$mal_scen <- 0.5 * sum(abs(data$rep_share_scen - data$pop_share))
       data$mal_scen <- mal(data$pop_share, data$rep_share_scen)
-      data$gini_scen <- voting_gini(data$pop_share, data$rep_share_scen)
+      # data$gini_scen <- voting_gini(data$pop_share, data$rep_share_scen)
     } else {
     data <- select(
       eu_brexit, country, ALDE, ECR, EFDD, ENF, EPP,
@@ -150,6 +150,7 @@ shinyServer(function(input, output, session) {
     # data$pop_rep_prop <- data$pop / data$rep_prop
 
     # Print
+    data$gini_scen <- voting_gini(data$pop_share, data$rep_share_scen)
     data
   })
 
@@ -307,7 +308,10 @@ shinyServer(function(input, output, session) {
             title = 'Share in Population and Seats',
             range = c(0,0.2)
             ),
-          xaxis = list(title = '')  # Fix this
+          xaxis = list(
+              title = '',
+              tickangle = 45
+          )  # Fix this
       )
 
     if (!is.null(rep_scen_comp$comp1)){
@@ -450,7 +454,7 @@ shinyServer(function(input, output, session) {
             data[,c("country", "pop_share", "rep_scen", "diffs_rep_scen", "rep_share_scen", "pop_rep_scen" )] #  "diffs_rep_share_scen",
           },
           rownames = FALSE,
-          colnames = c("Member State", "Population %", "Seats", "Difference", "Seats %", "Population/Seat") # "Difference in seat share",
+          colnames = c("Member State", "Pop. %", "Seats", "Diff.", "Seats %", "Pop. / Seat") # "Difference in seat share",
           ) %>%
           # formatRound(c('diffs_rep_share_scen'),2) %>%
           formatRound(c('pop_rep_scen'),0) %>%

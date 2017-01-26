@@ -8,8 +8,10 @@
 library(shiny)
 library(plotly)
 library(shinythemes)
+# library(shinytest)
 
 # Todo
+## Transnational list in Treaty change
 ## Seat loss waffle chart
 ## Optimize increment
 ## Indicate which countries conform to strict deg prop in table at least
@@ -37,11 +39,11 @@ scenarios_list <- c(
 )
 
 brexit_list <- c(
-  "Drop 73 MEPs",  "Equally distribute 73 MEPs (max 96)",
-  "Distribute 73 seats at current proportions (max 96)",
-  "Distribute 73 seats to increase representativeness (max 96)",
+  "Drop 73 MEPs",  "Equally distribute 73 MEPs",
+  "Distribute 73 seats at current proportions",
+  "Distribute 73 seats to increase representativeness"
   # "Distribute 73 seats to increase representativeness (no maximum)",
-  "Allocate seats to transnational list"
+  # "Allocate seats to transnational list"
 )
 
 treaty_list <- c(
@@ -52,9 +54,9 @@ treaty_list <- c(
 
 # scenarios_list <- c("Status quo",
 #                     "Brexit - Drop 73 MEPs",
-#                     "Brexit - Equally distribute 73 MEPs (max 96)",
-#                     "Brexit - Distribute 73 seats at current proportions (max 96)",
-#                     "Brexit - Distribute 73 seats to increase representativeness (max 96)",
+#                     "Brexit - Equally distribute 73 MEPs",
+#                     "Brexit - Distribute 73 seats at current proportions",
+#                     "Brexit - Distribute 73 seats to increase representativeness",
 #                     "Brexit - Distribute 73 seats to increase representativeness (no maximum)",
 #                     "Brexit - Allocate seats to transnational list",
 #                     "Proportional",
