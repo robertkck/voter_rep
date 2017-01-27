@@ -80,13 +80,17 @@ shinyUI(fluidPage(
           conditionalPanel(condition = "input.scen == 'Treaty change'",
             tags$hr(),
             selectInput("myscenario", "Select method",
-                        c("Cambridge Compromise (Base + Prop)", "Parabolic", "Limited loss") # "tbd - Square Root"
+                        c("Cambridge Compromise (Base + Prop)", "Parabolic", "Limited loss", "Transnational list") # "tbd - Square Root"
             ),
             checkboxInput("uk", "UK remains a Member", value = FALSE),
-            sliderInput("m", "Minimum number per State", 1, 10, 6),
-            sliderInput("M", "Maximum number per State", 75, 140, 96),
-            sliderInput("H", "Total number of Seats", 600, 800, 751)# ,
-            # downloadButton('downloadData', 'Download')
+            conditionalPanel(condition = "input.myscenario != 'Transnational list'",
+              sliderInput("m", "Minimum number per State", 1, 10, 6),
+              sliderInput("M", "Maximum number per State", 75, 140, 96),
+              sliderInput("H", "Total number of Seats", 600, 800, 751)# ,
+            ),
+            conditionalPanel(condition = "input.myscenario == 'Transnational list'",
+                             sliderInput("t", "Number of seats allocated to a transnational list", 0, 150, 73)
+            )
           ),
           conditionalPanel(condition = "input.scen == 'Simple Brexit scenarios'",
             tags$hr(),

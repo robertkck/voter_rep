@@ -6,7 +6,6 @@
 #
 
 library(shiny)
-library(ggplot2)
 library(plotly)
 library(countrycode)
 library(DT)
@@ -187,16 +186,20 @@ shinyServer(function(input, output, session) {
         allocation <- alloc.camcom(data$pop, m, M, H)
         out <- limitloss(data$rep, allocation$rep, allocation$rep_exact)
         data$rep_scen <- out$rep_scen
+      } else if (input$myscenario == "Transnational list"){
+        data$rep_scen <- data$rep + input$t * data$pop_share
       }
+
 
       data$rep_share_scen <- (data$rep_scen) / sum(data$rep_scen)
       data$pop_rep_scen <- data$pop / data$rep_scen
-      data$diffs_rep_scen <- data$rep_scen - data$rep
+      data$diffs_rep_scen <- round(data$rep_scen - data$rep,2)
       data$diffs_pop_rep_scen <-data$pop_rep_scen -  data$pop_rep
       data$diffs_rep_share_scen <- data$rep_share_scen - data$rep_share
       # data$mal_scen <- 0.5 * sum(abs(data$rep_share_scen - data$pop_share))
       data$mal_scen <- mal(data$pop_share, data$rep_share_scen)
       data$gini_scen <- voting_gini(data$pop_share, data$rep_share_scen)
+      data$rep_scen <- round(data$rep_scen,2)
       data
   })
 
