@@ -506,7 +506,7 @@ shinyServer(function(input, output, session) {
     t <- "Method: "
     if (input$scen=="Simple Brexit scenarios"){
       t <- paste0(t, input$brexit)
-    } else if (input$scen=="Allocations within the Treaty") {
+    } else if (input$scen=="Minimising inequality within the Treaty") {
       t <- paste0(t, input$treaty)
     } else if (input$scen=="Treaty change"){
       t <- paste0(t, input$myscenario)
@@ -517,7 +517,11 @@ shinyServer(function(input, output, session) {
   })
   output$text_gini <- renderText({
     data <- filteredData()
-    paste("Malapportionment:", percent(round(data$mal_scen[1], digits = 5)), ", Gini:", percent(round(data$gini_scen[1], digits = 3)))
+    paste("Gini:", percent(round(data$gini_scen[1], digits = 3)))
+  })
+  output$text_mal <- renderText({
+    data <- filteredData()
+    paste("Malapportionment:", percent(round(data$mal_scen[1], digits = 5)))
   })
   output$text_specs <- renderText({
     data <- filteredData()
@@ -531,12 +535,33 @@ shinyServer(function(input, output, session) {
   # Prepare download table
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste("EP", input$m, input$M, input$H, sep="_")
+        data <- filteredData()
+        m <- round(min(data$rep_scen),0)
+        M <- round(max(data$rep_scen),0)
+        H <- round(sum(data$rep_scen),0)
+        paste("EP", m, M, H, sep="_")
     },
     content = function(file) {
       data <- filteredData()
       data[, 2:10] <- data[, 2:10] * data$rep_scen
-      write.csv(data, file)
+      if (input$scen=="Status quo"){
+        data <- select(
+          data, country, pop, pop_share, seats_current = rep, seats_share_current = rep_share_scen,
+          pop_seats_current = pop_rep_scen, malapportionment = mal_scen, gini = gini_scen,
+          ALDE, ECR, EFDD, ENF, EPP, contains("Greens"),
+          contains("GUE/NGL"), NI, contains("S&D")
+        )
+      } else {
+        data <- select(
+          data, country, pop, pop_share, seats_current = rep, seats_share_current = rep_share,
+          pop_seats_current = pop_rep, seats_scenario = rep_scen, seats_share_scenario = rep_share_scen,
+          pop_seats_scenario = pop_rep_scen, diff_seats = diffs_rep_scen, malapportionment = mal_scen,
+          gini = gini_scen,
+          ALDE, ECR, EFDD, ENF, EPP, contains("Greens"),
+          contains("GUE/NGL"), NI, contains("S&D")
+        )
+      }
+      write.csv(data, file, row.names = FALSE)
     },
     contentType = "text/csv"
   )

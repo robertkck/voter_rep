@@ -89,7 +89,7 @@ shinyUI(fluidPage(
               sliderInput("H", "Total number of Seats", 600, 800, 751)# ,
             ),
             conditionalPanel(condition = "input.myscenario == 'Transnational list'",
-                             sliderInput("t", "Number of seats allocated to a transnational list", 0, 150, 73)
+                             sliderInput("t", "Number of seats allocated to a transnational list", 0, 100, 73)
             )
           ),
           conditionalPanel(condition = "input.scen == 'Simple Brexit scenarios'",
@@ -129,10 +129,11 @@ shinyUI(fluidPage(
       )
     ),
     column(3,
-           h3("Description of the scenario"),
+           h3("Description"),
            textOutput("text_scen"),
            textOutput("text_method"),
            textOutput("text_gini"),
+           textOutput("text_mal"),
            textOutput("text_specs"),
            tags$hr(),
            textOutput("text_desc"),
