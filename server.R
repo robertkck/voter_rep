@@ -583,21 +583,33 @@ shinyServer(function(input, output, session) {
   descScenario <- reactive({
     t <- ""
     if (input$scen=="Status quo"){
-      t <- paste0(t, "Allocation of seats in the EP, 2014 - 2019. The distribution of seats is part of secondary law and determined in European Council's decision from 28 June 2013 (2013/312/EU)")
+      t <- paste0(t, "Allocation of seats in the EP, 2014 - 2019. The distribution of seats is part of secondary law and determined in the European Council's decision from 28 June 2013 (2013/312/EU)")
     } else if (input$scen == "Simple Brexit scenarios") {
-
         if (input$brexit == "Drop 73 MEPs") {
           t <- paste0(t, "The size of the Parliament shrinks by the number of British MEPs.")
+        } else if (input$brexit == "Equally distribute 73 MEPs") {
+          t <- paste0(t, "73 are distributed equally over the remaining 27 member states while maintaining the upper limit of 96 seats. Each state receives three additional seats, except for Malta, Luxembourg, Cyrpus, Estonia and Latvia, which receive two seats. Germany does not receive additional seats as the upper limit would be exceeded.")
+        } else if (input$brexit == "Distribute 73 seats at current proportions") {
+          t <- paste0(t, "Seats are distributed following current proportions in the Parliament while maintaining the upper limit of 96 seats. Additional seats are computed using the Hamilton largest-remainder method.")
+        } else if (input$brexit == "Distribute 73 seats to increase representativeness") {
+          t <- paste0(t, "The vacant seats are step-wise allocated to the most under-represented member state while maintaing the upper limit of 96 seats.")
         }
-    } else if (input$scen == "Allocations within the Treaty"){
-      if (input$treaty=="Cambridge Compromise (total 751)") {
-        t <- paste0(t, "Following the recommendations of the Cambridge Compromise, this method allocates seats based on a fixed and a proportional part. First, every Member State receives 5 seats. Second, the remaining seats are linearly distributed according to population sizes with upwards rounding.")
-      }
+    } else if (input$scen == "Minimising inequality within the Treaty"){
       if (input$treaty=="Cambridge Compromise (total 736) - minimise malapportionment") {
         t <- paste0(t, "Following the recommendations of the Cambridge Compromise, this method allocates seats based on a fixed and a proportional part. First, every Member State receives 5 seats. Second, the remaining seats are linearly distributed according to population sizes with upwards rounding. A total parliament size of 736 minimises malapportionment")
       }
       if (input$treaty=="Cambridge Compromise (total 639) - minimise Gini") {
         t <- paste0(t, "Following the recommendations of the Cambridge Compromise, this method allocates seats based on a fixed and a proportional part. First, every Member State receives 5 seats. Second, the remaining seats are linearly distributed according to population sizes with upwards rounding. A total parliament size of 639 minimises the Gini coefficient")
+      }
+    } else if (input$scen == "Treaty change"){
+      if (input$myscenario=="Cambridge Compromise (Base + Prop)") {
+        t <- paste0(t, "Following the recommendations of the Cambridge Compromise, this method allocates seats based on a fixed and a proportional part. First, every Member State receives 5 seats. Second, the remaining seats are linearly distributed according to population sizes with upwards rounding.")
+      } else if (input$myscenario=="Parabolic") {
+        t <- paste0(t, "The ‘parabolic’ method produces one of the most degressively proportional allocation of seats. In its 2013 report, the AFCO committee suggests this mode of distribution to be used as a benchmark, although the implied redistribution would be ''too drastic to be politically sustainable in a single step'' (Gualtieri and Trzaskowski, 2013).")
+      } else if (input$myscenario=="Limited loss") {
+        t <- paste0(t, "Although this is not strictly a method, but rather an ad-hoc criterion for distribution of seats, it can be modelled by following the decision-making process behind the allocation for the 2014-2019 parliamentary cycle. The allocation proceeds in two steps. First, a degressively proportional distribution is drawn up . In the second step, seats are redistributed so that no Member State loses more than one seat.")
+      } else if (input$myscenario=="Transnational list") {
+        t <- paste0(t, "The selected number of seats are allocated to a transnational list while keeping the current number of seats per member state. This allocation is approximated by adding a fraction of the seats from the transnational list to member states depending on their population size.")
       }
     } else {
       t <- ""
