@@ -245,8 +245,8 @@ shinyServer(function(input, output, session) {
       ) %>%
       # add_bars( y = ~pop_share, name = "Share in population") %>%
       layout(
-        # legend = list(orientation = 'h'),
-        legend = list(showlegend = FALSE),
+        legend = list(x = 0, y = 1),
+        # legend = list(showlegend = FALSE),
         paper_bgcolor='transparent',
         plot_bgcolor='transparent',
         yaxis = list(
@@ -355,8 +355,8 @@ shinyServer(function(input, output, session) {
       #   visible = "legendonly"
       # ) %>%
       layout(
-        # legend = list(orientation = 'h'),
-        legend = list(showlegend = FALSE),
+        legend = list(x = 0, y = 1),
+        # legend = list(showlegend = FALSE),
         paper_bgcolor='transparent',
         plot_bgcolor='transparent',
         yaxis = list(
