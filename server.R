@@ -12,6 +12,7 @@ library(DT)
 library(scales)
 library(SciencesPo)
 library(tidyverse)
+library(ggvis)
 source('funk/voting_gini.R')
 source('funk/camcom.R')
 source('funk/parabolic.R')
@@ -224,7 +225,7 @@ shinyServer(function(input, output, session) {
   ### Plots
 
   # Plot Representation
-  output$represent <- renderPlotly({
+    output$represent <- renderPlotly({
     data <- filteredData()
     # scenario <- filteredScenario()
 
@@ -285,14 +286,20 @@ shinyServer(function(input, output, session) {
     p
     })
 
-  # Experimental ggvis plot for object permanence
-  # vis <- reactive({
-  #   ggvis(filteredData, x = ~pop, y = ~rep_scen) %>%
-  #     layer_points(size := 50, size.hover := 200,
-  #                  fillOpacity := 0.2, fillOpacity.hover := 0.5,
-  #                  key := ~country)
-  # })
-  # vis %>% bind_shiny("plot1")
+  # Plot Representation with ggvis
+  vis <- reactive({
+    ggvis(filteredData, x = ~pop, y = ~rep_scen) %>%
+      layer_points(size := 50, size.hover := 200,
+                   fillOpacity := 0.8, fillOpacity.hover := 1,
+                   stroke := "#d6cfd0", fill := "#a21636",
+                   key := ~country) %>%
+      add_tooltip(function(x){paste0(x$country, "<br>Seats: ", x$rep_scen, "<br>Population: ", format(x$pop, big.mark = ","))}) %>%
+      set_options(width = "auto") %>%
+      add_axis("x", title = 'Population', format = '.2s'
+      ) %>%
+      add_axis("y", title = 'Seats in the EP', values = (1:5)*20)
+  })
+  vis %>% bind_shiny("plot1")
 
 
   # Plot Shares
