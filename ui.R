@@ -108,6 +108,7 @@ shinyUI(fluidPage(
         ),
         mainPanel(
           tabsetPanel(
+            # tabPanel("Representation", ggvisOutput("plot1"), icon = icon("institution")) ,
             tabPanel("Representation", plotlyOutput("represent"), icon = icon("institution")) , # "The chart shows the allocation of seats in the 2014 - 2019 parliamentary cycle."), # ,
             tabPanel("Shares", plotlyOutput("shares", width="100%"), icon = icon("bar-chart")),
             tabPanel("Degressive Proportionality", plotlyOutput("degprop", width="100%"), icon = icon("line-chart")), # ,

@@ -226,7 +226,7 @@ shinyServer(function(input, output, session) {
   # Plot Representation
   output$represent <- renderPlotly({
     data <- filteredData()
-    scenario <- filteredScenario()
+    # scenario <- filteredScenario()
 
     # data$rep_prop <- 3 + data$pop * (sum(data$rep_scen - 3))/ sum(data$pop)
 
@@ -284,6 +284,15 @@ shinyServer(function(input, output, session) {
     }
     p
     })
+
+  # Experimental ggvis plot for object permanence
+  # vis <- reactive({
+  #   ggvis(filteredData, x = ~pop, y = ~rep_scen) %>%
+  #     layer_points(size := 50, size.hover := 200,
+  #                  fillOpacity := 0.2, fillOpacity.hover := 0.5,
+  #                  key := ~country)
+  # })
+  # vis %>% bind_shiny("plot1")
 
 
   # Plot Shares
