@@ -15,6 +15,7 @@ library(tidyverse)
 library(ggvis)
 source('funk/voting_gini.R')
 source('funk/camcom.R')
+source('funk/powcom.R')
 source('funk/parabolic.R')
 source('funk/limitloss.R')
 source('funk/malapportionment.R')
@@ -189,6 +190,9 @@ shinyServer(function(input, output, session) {
         data$rep_scen <- out$rep_scen
       } else if (input$myscenario == "Transnational list"){
         data$rep_scen <- data$rep + input$t * data$pop_share
+      } else if (input$myscenario == "Power Compromise"){
+        out <- alloc.powcom(data$pop, m, M, H)
+        data$rep_scen <- out$rep
       }
 
 
