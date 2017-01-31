@@ -3,7 +3,7 @@ alloc.camcom <- function(pop, m, M, H ){
   base <- m-1
   d = 2000000
   inc = 50000
-  rep_sum <- 700
+  rep_sum <- 0
   i = 0
   while (rep_sum!=H) {
     rep_exact_nocap = base + pop / d
