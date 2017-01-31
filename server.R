@@ -182,10 +182,13 @@ shinyServer(function(input, output, session) {
         # print(c)
         # print(sum(data$rep_scen))
         # print(M_par >= -c/(2*b))
+        if ((max(data$rep_scen) > M) | (c > 0)) {
+          showNotification(paste("Parabolic method not applicable for this specifications."), type = "warning", duration = 2)
+        }
         validate(
           # need(M_par <= -b/(2*c), "Please select a data set")
-          need(max(data$rep_scen) <= M, "Parabolic method not applicable for these specifications."),
-          need(c <= 0, "Parabolic method not applicable for these specifications.")
+          need(max(data$rep_scen) <= M, ""),
+          need(c <= 0, "")
         )
       } else if (input$myscenario == "Limited loss"){
         allocation <- alloc.camcom(data$pop, m, M, H)
@@ -196,6 +199,9 @@ shinyServer(function(input, output, session) {
       } else if (input$myscenario == "Power Compromise"){
         out <- alloc.powcom(data$pop, m, M, H)
         data$rep_scen <- out$rep
+        if (max(out$rep)< M) {
+          showNotification(paste("Upper limit is not effective for this specification."), type = "warning", duration = 2)
+        }
       }
 
 
@@ -239,13 +245,14 @@ shinyServer(function(input, output, session) {
     # data$rep_prop <- 3 + data$pop * (sum(data$rep_scen - 3))/ sum(data$pop)
 
     p <- plot_ly(data, x = ~pop, hoverinfo = 'text') %>%
+      config(collaborate = FALSE, displaylogo = FALSE) %>%
       # add_lines(
       #   y = ~rep_prop, name = paste0("Proportional <br> (min 3, total ", round(sum(data$rep_scen)),")" ),
       #   visible = "legendonly"
       # ) %>%
       add_markers(
         y = ~rep_scen, name = "Selected scenario",
-        text = ~paste0(country, "<br>Seats: ", rep_scen, "<br>Population: ", pop),
+        text = ~paste0(country, "<br>Seats: ", rep_scen, "<br>Population: ", format(pop, big.mark = ",")),
         marker = list(
           size = 8,
           color = "#a21636"
@@ -338,7 +345,8 @@ shinyServer(function(input, output, session) {
               title = '',
               tickangle = 45
           )  # Fix this
-      )
+      ) %>%
+      config(collaborate = FALSE, displaylogo = FALSE)
 
     if (!is.null(rep_scen_comp$comp1)){
       comparison_data <- data.frame(country = rep_scen_comp$country, comp1 = rep_scen_comp$comp1, comp1_share = rep_scen_comp$comp1_share)
@@ -364,6 +372,7 @@ shinyServer(function(input, output, session) {
     # data$pop_rep_prop <- data$pop / data$rep_prop
 
     p <- plot_ly(data, x = ~log(pop), hoverinfo = 'text') %>%
+      config(collaborate = FALSE, displaylogo = FALSE) %>%
       add_trace(
         y = ~pop_rep_scen, name = "Selected scenario",
         type = 'scatter',
@@ -454,7 +463,8 @@ shinyServer(function(input, output, session) {
           plot_bgcolor='transparent',
           xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
           yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)
-        )
+        ) %>%
+        config(collaborate = FALSE, displaylogo = FALSE)
     })
   })
 
@@ -633,6 +643,8 @@ shinyServer(function(input, output, session) {
         t <- paste0(t, "Although this is not strictly a method, but rather an ad-hoc criterion for distribution of seats, it can be modelled by following the decision-making process behind the allocation for the 2014-2019 parliamentary cycle. The allocation proceeds in two steps. First, a degressively proportional distribution is drawn up . In the second step, seats are redistributed so that no Member State loses more than one seat.")
       } else if (input$myscenario=="Transnational list") {
         t <- paste0(t, "The selected number of seats are allocated to a transnational list while keeping the current number of seats per member state. This allocation is approximated by adding a fraction of the seats from the transnational list to member states depending on their population size.")
+      } else if (input$myscenario=="Power Compromise") {
+      t <- paste0(t, "The ''Power Compromise'' is based on the Cambridge Compromise, but uses weighted population numbers. In a first step population numbers are raised to the power t (0<t<1). In the second step the 'base + prop' formula is applied on the weighted numbers. ")
       }
     } else {
       t <- ""

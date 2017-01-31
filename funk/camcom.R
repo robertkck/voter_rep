@@ -2,11 +2,12 @@
 alloc.camcom <- function(pop, m, M, H ){
   base <- m-1
   d = 2000000
-  inc = 500
+  inc = 50000
   rep_sum <- 700
   i = 0
   while (rep_sum!=H) {
-    rep_exact = pmin(base + pop / d, M)
+    rep_exact_nocap = base + pop / d
+    rep_exact = pmin(rep_exact_nocap, M)
     rep = ceiling(rep_exact)
     rep_sum <- sum(rep)
     if (rep_sum<H){
@@ -17,5 +18,6 @@ alloc.camcom <- function(pop, m, M, H ){
       d <- d + inc
     }
   }
-  return(list(rep = rep, rep_exact = rep_exact, d = d, i = i))
+  # print(i)
+  return(list(rep = rep, rep_exact = rep_exact, rep_exact_nocap = rep_exact_nocap, d = d, i = i))
 }

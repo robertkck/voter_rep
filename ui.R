@@ -81,7 +81,7 @@ shinyUI(fluidPage(
           conditionalPanel(condition = "input.scen == 'Treaty change'",
             tags$hr(),
             selectInput("myscenario", "Select method",
-                        c("Cambridge Compromise (Base + Prop)", "Parabolic", "Limited loss", "Transnational list", "Power Compromise") # "tbd - Square Root"
+                        c("Cambridge Compromise (Base + Prop)", "Power Compromise", "Parabolic", "Transnational list", "Limited loss") # "tbd - Square Root"
             ),
             checkboxInput("uk", "UK remains a Member", value = FALSE),
             conditionalPanel(condition = "input.myscenario != 'Transnational list'",
@@ -139,6 +139,7 @@ shinyUI(fluidPage(
            textOutput("text_specs"),
            tags$hr(),
            textOutput("text_desc"),
+           tags$hr(),
            downloadButton('downloadData', 'Download Data')
     )
   )

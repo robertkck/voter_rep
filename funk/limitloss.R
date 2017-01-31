@@ -4,8 +4,11 @@ limitloss <- function(rep, rep_scen, rep_scen_exact){
   diffs_rep_scen <- rep_scen - rep
   remainder <- abs(sum(diffs_rep_scen[diffs_rep_scen < -1] +1 ))
   possible <- sum(diffs_rep_scen[diffs_rep_scen > -1] + 1 )
+  if (remainder > possible) {
+    showNotification(paste("Limiting loss not feasible. Not enough seats to distribute."), type = "error", duration = 2)
+  }
   validate(
-    need(remainder <= possible, "Limiting loss not feasible. Not enough seats to distribute.")
+    need(remainder <= possible, "")
   )
   rep_scen[diffs_rep_scen < -1] <-  rep[diffs_rep_scen < -1] - 1
   if (remainder > 0) {
