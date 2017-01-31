@@ -99,6 +99,9 @@ shinyServer(function(input, output, session) {
   M <- 96
   H <- 751
 
+############################################################################################################
+# Reactive data generation
+
   # Filter data
   filteredScenario <- reactive({
     if (input$scen=="Simple Brexit scenarios"){
