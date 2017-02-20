@@ -24,7 +24,7 @@ alloc.powcom <- function(pop, m, M, H ){
           # print(paste("T", t, "iteration", i, "Parliament", sum(out$rep), "Max", max_rep))
         }
       min_rep <- min(out$rep)
-      print(paste(min_rep, x))
+      # print(paste(min_rep, x))
       if (min_rep < m) {x <- x + 1}
       if (min_rep > m) {x <- x - 1}
     }
