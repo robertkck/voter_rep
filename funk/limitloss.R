@@ -1,5 +1,6 @@
 # Limiting loss after allocation
 ## Fix minimum and maximum bounds. Minimum is not respected, max always looses
+
 limitloss <- function(rep, rep_scen, rep_scen_exact){
   diffs_rep_scen <- rep_scen - rep
   remainder <- abs(sum(diffs_rep_scen[diffs_rep_scen < -1] +1 ))

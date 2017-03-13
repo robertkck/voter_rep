@@ -1,4 +1,20 @@
-# Cambridge Compromise, Fix + Prop, allocation
+
+#' Cambridge Compromise, Fix + Prop, allocation
+#'
+#' The function calculates the allocation of MEPs according to the [Cambridge Compromise](http://www.statslab.cam.ac.uk/~grg/papers/cam-report-final2.pdf).
+#'
+#' @param pop Population count
+#' @param m Minimum number of MEPs per country, integer
+#' @param M Maximum number of MEPs per country, integer
+#' @param H Size of the EP, integer
+#'
+#' @return The function returns a vector of integers describing the allocation of seats according to the Cambridge Compromise
+#' @export
+#'
+#' @example reps <- alloc.camcom(c(500000, 1000000), 10, 20, 30)
+
+# TODO: Initial value of d and inc as function of pop
+
 alloc.camcom <- function(pop, m, M, H ){
   base <- m-1
   d = 2000000
