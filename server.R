@@ -116,7 +116,8 @@ shinyServer(function(input, output, session) {
     if (input$scen=="Status quo") {
       data <- eu
       data <- rename(data, rep_share_scen = rep_share ,
-                     pop_rep_scen =  pop_rep, mal_scen=mal, gini_scen = gini)
+                     pop_rep_scen =  pop_rep)
+      data$mal_scen <- mal(data$pop_share, data$rep_share_scen)
       data$rep_scen <- data$rep
     } else if (input$scen == "Treaty change") {
       data <- myScenData()
