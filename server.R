@@ -156,6 +156,7 @@ shinyServer(function(input, output, session) {
 
     # Print
     data$gini_scen <- voting_gini(data$pop_share, data$rep_share_scen)
+    data$mal_scen <- mal(data$pop_share, data$rep_share_scen)
     data
   })
 
