@@ -12,21 +12,22 @@ library(DT)
 library(scales)
 library(SciencesPo)
 library(tidyverse)
-library(ggvis)
+# library(ggvis)
 source('funk/voting_gini.R')
 source('funk/camcom.R')
 source('funk/powcom.R')
 source('funk/parabolic.R')
 source('funk/limitloss.R')
+source('funk/noloss.R')
 source('funk/malapportionment.R')
 
 scenarios_list <- c(
   "Status quo",
-  "Simple Brexit scenarios",
+  "Current Proposal and Amendments",
+  "Simple Brexit Scenarios",
   "Minimising inequality within the Treaty",
   "Treaty change"
 )
-
 brexit_list <- c(
   "Drop 73 MEPs",
   "Equally distribute 73 MEPs",
@@ -36,13 +37,30 @@ brexit_list <- c(
   # "Allocate seats to transnational list"
 )
 
-treaty_list <- c(
-  # "Cambridge Compromise (total 751)",
-  "Cambridge Compromise (total 639) - minimise Gini",
-  "Cambridge Compromise (total 736) - minimise malapportionment"
+brexit_props <- c(
+  "AFCO Proposal",
+  "Amendment 140: No reallocation",
+  "Amendment 141: Guy Verhofstadt",
+  "Amendment 142: György Schöpflin",
+  "Amendment 143: Pascal Durand",
+  "Amendment 144: Martina Anderson",
+  "Amendment 145: Jerome Lavrilleux",
+  "Amendment 146: Michal Boni et al."
+  # "Drop 73 MEPs",
+  # "Equally distribute 73 MEPs",
+  # "Distribute 73 seats at current proportions",
+  # "Distribute 73 seats to increase representativeness"
+  # "Distribute 73 seats to increase representativeness (no maximum)",
+  # "Allocate seats to transnational list"
 )
 
+treaty_list <- c(
+  # "Cambridge Compromise (total 751)",
+  "Cambridge Compromise (total 637) - minimise Gini",
+  "Cambridge Compromise (total 736) - minimise malapportionment"
+)
 brexit_num <- c("1", "7", "5", "2") #  "4" "9"
+brexit_prop_num <- c(2, 3, 4, 5, 6, 7, 8, 9) #  "4" "9"
 treaty_num <- c( "_gini", "6") #  "3"
 
 scenarios_num <- c("", "1", "7", "5", "2", "9", "4", "3", "6" ) # Status quo wrong
@@ -64,48 +82,55 @@ shinyServer(function(input, output, session) {
 ###########################################################################################################
 # Preamble
   # Load data
-  eu_brexit <- read.csv("data/eu_brexit.csv")
-  eu_brexit$ctry <- countrycode(eu_brexit$GEO, "country.name", "iso3c")
-  eu <- read.csv("data/eu.csv")
-  eu$ctry <- countrycode(eu$GEO, "country.name", "iso3c")
-  meps <- read.csv("data/meps.csv")
-  # meps_mat <- table(meps$country, meps$grp)
-  meps_table <- count(meps, country, grp)
-  meps_table[(meps_table$country == "Spain") & (meps_table$grp == "EPP"), 'n'] <- 17
-  meps_table <- spread(meps_table, grp, n, fill=0)
-  meps_table[,-1] <- meps_table[,-1] / rowSums(meps_table[,-1])
-  meps_group <- count(meps, grp, group)
-  meps_group[(meps_group$grp == "EPP"), 'n'] <- 217
-  # m_short <- meps_group$grp
-  # m_long <- meps_group$group
-  m_labels <- data.frame(meps_group$grp, meps_group$group, colors)
-  rep_scen_comp <- NULL
+  # eu_brexit <- read.csv("data/eu_brexit.csv")
+  # eu_brexit$ctry <- countrycode(eu_brexit$GEO, "country.name", "iso3c")
+  # eu <- read.csv("data/eu.csv")
+  # eu$ctry <- countrycode(eu$GEO, "country.name", "iso3c")
+  # meps <- read.csv("data/meps.csv")
+  # # meps_mat <- table(meps$country, meps$grp)
+  # meps_table <- count(meps, country, grp)
+  # meps_table[(meps_table$country == "Spain") & (meps_table$grp == "EPP"), 'n'] <- 17
+  # meps_table <- spread(meps_table, grp, n, fill=0)
+  # meps_table[,-1] <- meps_table[,-1] / rowSums(meps_table[,-1])
+  # meps_group <- count(meps, grp, group)
+  # meps_group[(meps_group$grp == "EPP"), 'n'] <- 217
+  # # m_short <- meps_group$grp
+  # # m_long <- meps_group$group
+  # m_labels <- data.frame(meps_group$grp, meps_group$group, colors)
+  # rep_scen_comp <- NULL
+  #
+  # # Merge data sets
+  # eu <- merge(meps_table, eu, by.x="country", by.y = "GEO")
+  # eu <- eu[order(-eu$pop),]
+  # eu_brexit <- merge(meps_table, eu_brexit, by.x="country", by.y = "GEO")
+  # eu_brexit <- eu_brexit[order(-eu_brexit$pop),]
+  #
+  # # Load proposals
+  # props <- read_csv("data/proposals.csv")
+  # props$ctry <- countrycode(props$country, "country.name", "iso3c")
+  #
+  # # Defaults
+  # data <- eu_brexit
+  # data <- select(
+  #   data, country, ALDE, ECR, EFDD, ENF, EPP,
+  #   contains("Greens"), contains("GUE/NGL"), NI, contains("S&D"),
+  #   ctry, pop, rep,  pop_share, pop_rep, rep_share
+  # )
+  # data$rep_scen <- data$rep
+  # m <- 6
+  # M <- 96
+  # H <- 751
 
-  # Merge data sets
-  eu <- merge(meps_table, eu, by.x="country", by.y = "GEO")
-  eu <- eu[order(-eu$pop),]
-  eu_brexit <- merge(meps_table, eu_brexit, by.x="country", by.y = "GEO")
-  eu_brexit <- eu_brexit[order(-eu_brexit$pop),]
-
-  # Defaults
-  data <- eu_brexit
-  data <- select(
-    data, country, ALDE, ECR, EFDD, ENF, EPP,
-    contains("Greens"), contains("GUE/NGL"), NI, contains("S&D"),
-    ctry, pop, rep,  pop_share, pop_rep, rep_share
-  )
-  data$rep_scen <- data$rep
-  m <- 6
-  M <- 96
-  H <- 751
-
+  load("data/data.RData")
 ############################################################################################################
 # Reactive data generation
 
   # Filter data
   filteredScenario <- reactive({
-    if (input$scen=="Simple Brexit scenarios"){
+    if (input$scen=="Simple Brexit Scenarios"){
       brexit_num[brexit_list == input$brexit]
+    } else if (input$scen=="Current Proposal and Amendments"){
+      brexit_prop_num[brexit_props == input$brexit_props]
     } else if (input$scen=="Minimising inequality within the Treaty") {
       treaty_num[treaty_list == input$treaty]
     }
@@ -130,7 +155,7 @@ shinyServer(function(input, output, session) {
       )
       m <- 6
       M <- 96
-      H <- 639
+      H <- 637
       out <- alloc.camcom(data$pop, m, M, H)
       data$rep_scen <- out$rep
       data$rep_share_scen <- (data$rep_scen) / sum(data$rep_scen)
@@ -141,14 +166,22 @@ shinyServer(function(input, output, session) {
       # data$mal_scen <- 0.5 * sum(abs(data$rep_share_scen - data$pop_share))
       data$mal_scen <- mal(data$pop_share, data$rep_share_scen)
       # data$gini_scen <- voting_gini(data$pop_share, data$rep_share_scen)
-    } else {
-    data <- select(
-      eu_brexit, country, ALDE, ECR, EFDD, ENF, EPP,
-      contains("Greens"), contains("GUE/NGL"), NI, contains("S&D"),
-      ctry, pop, rep, pop_share, pop_rep, rep_share,
-      ends_with(scenario)
+    } else if (is.numeric(scenario)) {
+    data <- select(props, country, rep_scen = scenario, pop, pop_share, ctry, rep, rep_share, pop_rep)
+    # data$rep_scen <- data$rep
+    data$rep_share_scen <- (data$rep_scen) / sum(data$rep_scen)
+    data$pop_rep_scen <- data$pop / data$rep_scen
+    data$diffs_rep_scen <- round(data$rep_scen - data$rep,2)
+    # data$mal_scen <- 0.5 * sum(abs(data$rep_share_scen - data$pop_share))
+    data$mal_scen <- mal(data$pop_share, data$rep_share_scen)
+    }  else {
+      data <- select(
+        eu_brexit, country, ALDE, ECR, EFDD, ENF, EPP,
+        contains("Greens"), contains("GUE/NGL"), NI, contains("S&D"),
+        ctry, pop, rep, pop_share, pop_rep, rep_share,
+        ends_with(scenario)
       )
-    names(data) <- gsub(scenario, "_scen", names(data))
+      names(data) <- gsub(scenario, "_scen", names(data))
     }
     # Insert proportional benchmark
     # data$rep_prop <- 3 + data$pop * 3 / min(data$pop)
@@ -194,7 +227,11 @@ shinyServer(function(input, output, session) {
         )
       } else if (input$myscenario == "Limited loss"){
         allocation <- alloc.camcom(data$pop, m, M, H)
-        out <- limitloss(data$rep, allocation$rep, allocation$rep_exact)
+        out <- limitloss(data$rep, allocation$rep, allocation$rep_exact, m, M)
+        data$rep_scen <- out$rep_scen
+      } else if (input$myscenario == "No loss of seats"){
+        allocation <- alloc.camcom(data$pop, m, M, H)
+        out <- noloss(data$rep, allocation$rep, allocation$rep_exact, m, M)
         data$rep_scen <- out$rep_scen
       } else if (input$myscenario == "Transnational list"){
         data$rep_scen <- data$rep + input$t * data$pop_share
@@ -303,19 +340,19 @@ shinyServer(function(input, output, session) {
     })
 
   # Plot Representation with ggvis
-  vis <- reactive({
-    ggvis(filteredData, x = ~pop, y = ~rep_scen) %>%
-      layer_points(size := 50, size.hover := 200,
-                   fillOpacity := 0.8, fillOpacity.hover := 1,
-                   stroke := "#d6cfd0", fill := "#a21636",
-                   key := ~country) %>%
-      add_tooltip(function(x){paste0(x$country, "<br>Seats: ", x$rep_scen, "<br>Population: ", format(x$pop, big.mark = ","))}) %>%
-      set_options(width = "auto") %>%
-      add_axis("x", title = 'Population', format = '.2s'
-      ) %>%
-      add_axis("y", title = 'Seats in the EP', values = (1:5)*20)
-  })
-  vis %>% bind_shiny("plot1")
+  # vis <- reactive({
+  #   ggvis(filteredData, x = ~pop, y = ~rep_scen) %>%
+  #     layer_points(size := 50, size.hover := 200,
+  #                  fillOpacity := 0.8, fillOpacity.hover := 1,
+  #                  stroke := "#d6cfd0", fill := "#a21636",
+  #                  key := ~country) %>%
+  #     add_tooltip(function(x){paste0(x$country, "<br>Seats: ", x$rep_scen, "<br>Population: ", format(x$pop, big.mark = ","))}) %>%
+  #     set_options(width = "auto") %>%
+  #     add_axis("x", title = 'Population', format = '.2s'
+  #     ) %>%
+  #     add_axis("y", title = 'Seats in the EP', values = (1:5)*20)
+  # })
+  # vis %>% bind_shiny("plot1")
 
 
   # Plot Shares
@@ -428,47 +465,6 @@ shinyServer(function(input, output, session) {
 
   })
 
-  # Hemicycle chart
-  observe({
-    scenario <- filteredScenario()
-    data <- filteredData()
-    # if (input$seats == "Political group") {
-    meps_prop <- data[, 2:10] * data$rep_scen
-    m <- round(colSums(meps_prop), digit = 0)
-    m <- m[order(m, decreasing = TRUE)]
-    # m_short <- m_short[order(names(m))[m_short]]
-    # m_long <- m_long[order(names(m))[m_short]]
-    m_labels <- m_labels[match(names(m), m_labels[,1]),]
-
-      # } else {
-      #   m <- data$rep_scen
-      #   m_short <- data$ctry
-      #   m_long <- data$country
-      # }
-
-    output$hemi <- renderPlotly({
-      p <- plot_ly(
-        type = "pie",
-        values = m,
-        hole = 0.4,
-        # labels = m_long,
-        # text = m_short,
-        labels = m_labels[,2],
-        text = m_labels[,1],
-        showlegend = FALSE,
-        insidetextfont = list(color = '#FFFFFF'),
-        marker = list(colors = m_labels$colors,
-                      line = list(color = '#FFFFFF', width = 1))
-      ) %>%
-        layout(
-          paper_bgcolor='transparent',
-          plot_bgcolor='transparent',
-          xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)
-        ) %>%
-        config(collaborate = FALSE, displaylogo = FALSE)
-    })
-  })
 
   #################################################################################################
   ### Tables
@@ -539,7 +535,9 @@ shinyServer(function(input, output, session) {
   })
   output$text_method <- renderText({
     t <- "Method: "
-    if (input$scen=="Simple Brexit scenarios"){
+    if (input$scen=="Current Proposal and Amendments"){
+      t <- paste0(t, input$brexit_props)
+    } else if (input$scen=="Simple Brexit Scenarios"){
       t <- paste0(t, input$brexit)
     } else if (input$scen=="Minimising inequality within the Treaty") {
       t <- paste0(t, input$treaty)
@@ -574,26 +572,22 @@ shinyServer(function(input, output, session) {
         m <- round(min(data$rep_scen),0)
         M <- round(max(data$rep_scen),0)
         H <- round(sum(data$rep_scen),0)
-        paste("EP", m, M, H, sep="_")
+        paste0("EP_", m, "_", M, "_", H, ".csv")
     },
     content = function(file) {
       data <- filteredData()
-      data[, 2:10] <- data[, 2:10] * data$rep_scen
+      # data[, 2:10] <- data[, 2:10] * data$rep_scen
       if (input$scen=="Status quo"){
         data <- select(
           data, country, pop, pop_share, seats_current = rep, seats_share_current = rep_share_scen,
-          pop_seats_current = pop_rep_scen, malapportionment = mal_scen, gini = gini_scen,
-          ALDE, ECR, EFDD, ENF, EPP, contains("Greens"),
-          contains("GUE/NGL"), NI, contains("S&D")
+          pop_seats_current = pop_rep_scen, malapportionment = mal_scen, gini = gini_scen
         )
       } else {
         data <- select(
           data, country, pop, pop_share, seats_current = rep, seats_share_current = rep_share,
           pop_seats_current = pop_rep, seats_scenario = rep_scen, seats_share_scenario = rep_share_scen,
           pop_seats_scenario = pop_rep_scen, diff_seats = diffs_rep_scen, malapportionment = mal_scen,
-          gini = gini_scen,
-          ALDE, ECR, EFDD, ENF, EPP, contains("Greens"),
-          contains("GUE/NGL"), NI, contains("S&D")
+          gini = gini_scen
         )
       }
       write.csv(data, file, row.names = FALSE)
@@ -619,7 +613,9 @@ shinyServer(function(input, output, session) {
     t <- ""
     if (input$scen=="Status quo"){
       t <- paste0(t, "Allocation of seats in the EP, 2014 - 2019. The distribution of seats is part of secondary law and determined in the European Council's decision from 28 June 2013 (2013/312/EU)")
-    } else if (input$scen == "Simple Brexit scenarios") {
+    } else if(input$scen == "Current Proposal and Amendments") {
+      t <- "Proposal discussed in the European Parliament in January 2018"
+    } else if (input$scen == "Simple Brexit Scenarios") {
         if (input$brexit == "Drop 73 MEPs") {
           t <- paste0(t, "The size of the Parliament shrinks by the number of British MEPs.")
         } else if (input$brexit == "Equally distribute 73 MEPs") {
@@ -633,8 +629,8 @@ shinyServer(function(input, output, session) {
       if (input$treaty=="Cambridge Compromise (total 736) - minimise malapportionment") {
         t <- paste0(t, "Following the recommendations of the Cambridge Compromise, this method allocates seats based on a fixed and a proportional part. First, every Member State receives 5 seats. Second, the remaining seats are linearly distributed according to population sizes with upwards rounding. A total parliament size of 736 minimises malapportionment")
       }
-      if (input$treaty=="Cambridge Compromise (total 639) - minimise Gini") {
-        t <- paste0(t, "Following the recommendations of the Cambridge Compromise, this method allocates seats based on a fixed and a proportional part. First, every Member State receives 5 seats. Second, the remaining seats are linearly distributed according to population sizes with upwards rounding. A total parliament size of 639 minimises the Gini coefficient")
+      if (input$treaty=="Cambridge Compromise (total 637) - minimise Gini") {
+        t <- paste0(t, "Following the recommendations of the Cambridge Compromise, this method allocates seats based on a fixed and a proportional part. First, every Member State receives 5 seats. Second, the remaining seats are linearly distributed according to population sizes with upwards rounding. A total parliament size of 637 minimises the Gini coefficient")
       }
     } else if (input$scen == "Treaty change"){
       if (input$myscenario=="Cambridge Compromise (Base + Prop)") {
@@ -643,6 +639,8 @@ shinyServer(function(input, output, session) {
         t <- paste0(t, "The ‘parabolic’ method produces one of the most degressively proportional allocation of seats. In its 2013 report, the AFCO committee suggests this mode of distribution to be used as a benchmark, although the implied redistribution would be ''too drastic to be politically sustainable in a single step'' (Gualtieri and Trzaskowski, 2013).")
       } else if (input$myscenario=="Limited loss") {
         t <- paste0(t, "Although this is not strictly a method, but rather an ad-hoc criterion for distribution of seats, it can be modelled by following the decision-making process behind the allocation for the 2014-2019 parliamentary cycle. The allocation proceeds in two steps. First, a degressively proportional distribution is drawn up . In the second step, seats are redistributed so that no Member State loses more than one seat.")
+      } else if (input$myscenario=="No loss of seats") {
+        t <- paste0(t, "Although this is not strictly a method, but rather an ad-hoc criterion for distribution of seats, it can be modelled by following the decision-making process behind the allocation for the 2014-2019 parliamentary cycle. The allocation proceeds in two steps. First, a degressively proportional distribution is drawn up . In the second step, seats are redistributed so that no Member State loses a seat.")
       } else if (input$myscenario=="Transnational list") {
         t <- paste0(t, "The selected number of seats are allocated to a transnational list while keeping the current number of seats per member state. This allocation is approximated by adding a fraction of the seats from the transnational list to member states depending on their population size.")
       } else if (input$myscenario=="Power Compromise") {

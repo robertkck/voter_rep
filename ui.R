@@ -8,7 +8,7 @@
 library(shiny)
 library(plotly)
 library(shinythemes)
-library(ggvis)
+# library(ggvis)
 # library(shinytest)
 
 # Todo
@@ -34,9 +34,27 @@ library(ggvis)
 
 scenarios_list <- c(
   "Status quo",
-  "Simple Brexit scenarios",
+  "Current Proposal and Amendments",
+  "Simple Brexit Scenarios",
   "Minimising inequality within the Treaty", # "Allocations within the Treaty",
   "Treaty change"
+)
+
+brexit_props <- c(
+  "AFCO Proposal",
+  "Amendment 140: No reallocation",
+  "Amendment 141: Guy Verhofstadt",
+  "Amendment 142: György Schöpflin",
+  "Amendment 143: Pascal Durand",
+  "Amendment 144: Martina Anderson",
+  "Amendment 145: Jerome Lavrilleux",
+  "Amendment 146: Michal Boni et al."
+  # "Drop 73 MEPs",
+  # "Equally distribute 73 MEPs",
+  # "Distribute 73 seats at current proportions",
+  # "Distribute 73 seats to increase representativeness"
+  # "Distribute 73 seats to increase representativeness (no maximum)",
+  # "Allocate seats to transnational list"
 )
 
 brexit_list <- c(
@@ -49,7 +67,7 @@ brexit_list <- c(
 
 treaty_list <- c(
   # "Cambridge Compromise (total 751)",
-  "Cambridge Compromise (total 639) - minimise Gini",
+  "Cambridge Compromise (total 637) - minimise Gini",
   "Cambridge Compromise (total 736) - minimise malapportionment"
 )
 
@@ -72,7 +90,10 @@ shinyUI(fluidPage(
   # includeCSS("http://www.w3schools.com/lib/w3.css"),
   theme = "bootstrap.css",
   # theme = shinytheme("paper"),
-  titlePanel(h3("Representation in the European Parliament"), windowTitle = "Representation in the European Parliament"),
+  titlePanel(
+    h3("Representation in the European Parliament"),
+    windowTitle = "Representation in the European Parliament"),
+  p("Based on population data as established by Council Decision 2016/2353"),
   fluidRow(
     column(9,
       sidebarLayout(
@@ -81,7 +102,7 @@ shinyUI(fluidPage(
           conditionalPanel(condition = "input.scen == 'Treaty change'",
             tags$hr(),
             selectInput("myscenario", "Select method",
-                        c("Cambridge Compromise (Base + Prop)", "Power Compromise", "Parabolic", "Transnational list", "Limited loss") # "tbd - Square Root"
+                        c("Cambridge Compromise (Base + Prop)", "Power Compromise", "Parabolic", "Transnational list", "No loss of seats", "Limited loss") # "tbd - Square Root"
             ),
             checkboxInput("uk", "UK remains a Member", value = FALSE),
             conditionalPanel(condition = "input.myscenario != 'Transnational list'",
@@ -93,39 +114,34 @@ shinyUI(fluidPage(
                              sliderInput("t", "Number of seats allocated to a transnational list", 0, 100, 73)
             )
           ),
-          conditionalPanel(condition = "input.scen == 'Simple Brexit scenarios'",
+          conditionalPanel(condition = "input.scen == 'Current Proposal and Amendments'",
             tags$hr(),
-            selectInput("brexit", "Select method", brexit_list
+            selectInput("brexit_props", "Select method", brexit_props
             )
+          ),
+          conditionalPanel(condition = "input.scen == 'Simple Brexit Scenarios'",
+                           tags$hr(),
+                           selectInput("brexit", "Select method", brexit_list
+                           )
           ),
           conditionalPanel(condition = "input.scen == 'Minimising inequality within the Treaty'",
             tags$hr(),
             selectInput("treaty", "Select method", treaty_list
             )
-          ),
-          tags$hr(),
-          actionButton("compare", "Compare", icon = icon("thumb-tack")),
-          actionButton("clear", "Clear", icon = icon("undo"))
+          )
         ),
         mainPanel(
           tabsetPanel(
             # tabPanel("Representation", ggvisOutput("plot1"), icon = icon("institution")) ,
-            tabPanel("Representation", plotlyOutput("represent"), icon = icon("institution")) , # "The chart shows the allocation of seats in the 2014 - 2019 parliamentary cycle."), # ,
+            tabPanel("Seats", plotlyOutput("represent"), icon = icon("institution")) , # "The chart shows the allocation of seats in the 2014 - 2019 parliamentary cycle."), # ,
             tabPanel("Shares", plotlyOutput("shares", width="100%"), icon = icon("bar-chart")),
             tabPanel("Degressive Proportionality", plotlyOutput("degprop", width="100%"), icon = icon("line-chart")), # ,
-            tabPanel("Table", DT::dataTableOutput("table"), icon = icon("table")),
-            tabPanel(
-              "Seats",
-              # radioButtons("seats", "",
-              #              c("Political group",
-              #                "Member State")
-              # ),
-              plotlyOutput("hemi", width="100%"),
-              icon = icon("pie-chart")
-              ) # ,
-            # tabPanel("Comparison", DT::dataTableOutput("comp"))
-            # tabPanel("Summary", verbatimTextOutput("summary"))
-          )
+            tabPanel("Table", DT::dataTableOutput("table"), icon = icon("table"))
+          ),
+          tags$hr(),
+          actionButton("compare", "Compare", icon = icon("thumb-tack")),
+          actionButton("clear", "Clear", icon = icon("undo")),
+          downloadButton('downloadData', 'Download Data')
           # DT::dataTableOutput("comp")
         )
       )
@@ -139,8 +155,7 @@ shinyUI(fluidPage(
            textOutput("text_specs"),
            tags$hr(),
            textOutput("text_desc"),
-           tags$hr(),
-           downloadButton('downloadData', 'Download Data')
+           tags$hr()
     )
   )
 ))
