@@ -23,8 +23,6 @@ Depends:
     plotly,
     purrr,
     scales,
-    SciencesPo,
-    SciencesPo,
     shiny,
     shiny,
     shinythemes,
