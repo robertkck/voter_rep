@@ -1,5 +1,10 @@
 # Voter representation project and Shiny app
 
+<!-- badges: start -->
+[![Launch Rstudio Binder](http://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/robertkck/voter_rep/master?urlpath=rstudio)
+<!-- badges: end -->
+
+
 This repo contains data and code for the Bruegel publication ['Is Brexit an Opportunity to Reform the European Parliament'](http://bruegel.org/2017/01/is-brexit-an-opportunity-to-reform-the-european-parliament/) and is the basis for the accompanying [Shiny app](https://robertkck.shinyapps.io/voter_rep/).
 
 ## Code
