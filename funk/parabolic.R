@@ -1,7 +1,7 @@
 # Parabolic method, allocation
 alloc.parabolic <- function(pop, m, M, H ){
   c <- -0.01
-  exante <- pop * H / sum(pop)
+  exante <- as.numeric(pop) * H / sum(as.numeric(pop))
   m_par <- min(exante)
   M_par <- max(exante)
   rep <- rep(100, length(pop))
@@ -11,7 +11,7 @@ alloc.parabolic <- function(pop, m, M, H ){
     b <- (M-m)/(M_par - m_par) - c * (M_par^2 - m_par^2)/(M_par - m_par)
     rep_exact <- a + b * exante + c * exante^2
     rep = round(rep_exact)
-    c <- c + 0.00001
+    c <- c + 0.000001
     i <- i + 1
   }
   return(list(rep = rep, rep_exact = rep_exact, c = c, i = i))
